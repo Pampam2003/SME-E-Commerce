@@ -1,31 +1,9 @@
-# Node modules
 node_modules/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Environment variables
-.env
-.env.local
-
-# Database files
 *.frm
 *.ibd
 *.MYD
 *.MYI
-
-# Uploads folder (user-generated images)
-public/uploads/
 uploads/
-
-# IDE / OS files
+.env
 .DS_Store
 Thumbs.db
-.vscode/
-.idea/
-
-# Build/output
-/dist
-/build
