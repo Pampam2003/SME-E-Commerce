@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Product</title>
+  <style>
+    body { font-family: Arial; background: #f8f8f8; padding: 20px; }
+    h2 { text-align:center; margin-bottom:20px; }
+    form { max-width:500px; margin:auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    label { display:block; margin-bottom:5px; font-weight:bold; }
+    input, textarea { width:100%; padding:8px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; }
+    button { padding:10px 15px; border:none; border-radius:5px; color:white; cursor:pointer; }
+    .save-btn { background:#007bff; }
+    .save-btn:hover { background:#0056b3; }
+    .back-btn { background:#28a745; margin-bottom:20px; display:inline-block; }
+    .back-btn:hover { background:#218838; }
+    img { max-width:150px; margin-bottom:10px; display:block; }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="window.location.href='view-products.html'">← Back</button>
+  <h2>Edit Product</h2>
+
+  <form id="editProductForm">
+    <label for="name">Name</label>
+    <input type="text" id="name" required>
+    <label for="description">Description</label>
+    <textarea id="description" rows="3"></textarea>
+    <label for="price">Price ($)</label>
+    <input type="number" id="price" step="0.01" required>
+    <label for="quantity">Quantity</label>
+    <input type="number" id="quantity" required>
+    <label for="image">Product Image</label>
+    <input type="file" id="image">
+    <img id="previewImage" src="" alt="Product Image">
+    <input type="hidden" id="currentImage">
+    <button type="submit" class="save-btn">Save Changes</button>
+  </form>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    const nameInput = document.getElementById('name');
+    const descriptionInput = document.getElementById('description');
+    const priceInput = document.getElementById('price');
+    const quantityInput = document.getElementById('quantity');
+    const imageInput = document.getElementById('image');
+    const previewImage = document.getElementById('previewImage');
+    const currentImageInput = document.getElementById('currentImage');
+    const form = document.getElementById('editProductForm');
+
+    // Load product details
+    async function loadProduct() {
+      const res = await fetch(`/products/${productId}`);
+      const product = await res.json();
+      nameInput.value = product.name;
+      descriptionInput.value = product.description || '';
+      priceInput.value = product.price;
+      quantityInput.value = product.quantity;
+      previewImage.src = product.image || '';
+      currentImageInput.value = product.image || '';
+    }
+
+    // Preview new image if selected
+    imageInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => previewImage.src = e.target.result;
+        reader.readAsDataURL(file);
+      } else {
+        previewImage.src = currentImageInput.value;
+      }
+    });
+
+    // Submit form
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('name', nameInput.value);
+      formData.append('description', descriptionInput.value);
+      formData.append('price', priceInput.value);
+      formData.append('quantity', quantityInput.value);
+      if (imageInput.files[0]) {
+        formData.append('image', imageInput.files[0]);
+      } else {
+        formData.append('currentImage', currentImageInput.value);
+      }
+
+      const res = await fetch(`/update-product/${productId}`, { method: 'PUT', body: formData });
+      const data = await res.json();
+      alert(data.message || 'Product updated successfully!');
+
+      // Flag to refresh ViewProducts table
+      localStorage.setItem('refreshViewProducts', 'true');
+
+      // Redirect to view-products.html
+      window.location.href = 'view-products.html';
+    });
+
+    loadProduct();
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Respond to Reviews | SME Dashboard</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#f4f4f4; }
+  .container { max-width:1000px; margin:0 auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+  h2 { text-align:center; color:#333; }
+  table { width:100%; border-collapse: collapse; margin-top:20px; }
+  th, td { border:1px solid #ddd; padding:10px; text-align:left; }
+  th { background:#007bff; color:white; }
+  input, textarea { width:100%; padding:8px; margin:4px 0; border-radius:4px; border:1px solid #ccc; }
+  button { padding:6px 12px; border:none; border-radius:5px; cursor:pointer; background:#28a745; color:white; font-weight:bold; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Respond to Customer Reviews</h2>
+  <table id="reviewsTable">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Customer</th>
+        <th>Review</th>
+        <th>Reply</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Reviews will be loaded here -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function loadReviews() {
+  try {
+    const res = await fetch('http://localhost:5000/reviews'); // Admin fetches all reviews
+    const reviews = await res.json();
+    const tbody = document.querySelector('#reviewsTable tbody');
+    tbody.innerHTML = reviews.map(r => `
+      <tr>
+        <td>${r.product_name}</td>
+        <td>${r.customer_email}</td>
+        <td>${r.review}</td>
+        <td>
+          <textarea id="reply-${r.id}" placeholder="Write a reply...">${r.reply || ''}</textarea>
+        </td>
+        <td><button onclick="sendReply(${r.id})">Send Reply</button></td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('Failed to load reviews', err);
+  }
+}
+
+async function sendReply(reviewId) {
+  const reply = document.getElementById(`reply-${reviewId}`).value;
+  if (!reply) return alert('Please enter a reply');
+  try {
+    const res = await fetch(`http://localhost:5000/reviews/${reviewId}`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ reply })
+    });
+    const data = await res.json();
+    alert(data.message || 'Reply sent!');
+    loadReviews(); // refresh
+  } catch(err) {
+    console.error('Failed to send reply', err);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', loadReviews);
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register | SME E-Commerce</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>SME Registration</h2>
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <select id="role">
+        <option value="customer">Customer</option>
+        <option value="admin">Admin</option>
+        <option value="sme_owner">SME Owner</option>
+      </select>
+      <button type="submit">Register</button>
+      <p>Already have an account? <a href="login.html">Login here</a></p>
+    </form>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('role').value;
+
+      try {
+        const res = await fetch('http://localhost:5000/register', {  // ✅ Explicit URL
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role })
+        });
+
+        const data = await res.json();
+        document.getElementById('message').textContent = data.message;
+      } catch (err) {
+        document.getElementById('message').textContent = '⚠️ Connection error. Please try again.';
+        console.error('Error:', err);
+      }
+    });
+  </script>
+</body>
+</html>

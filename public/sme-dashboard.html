@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SME Owner | My Business</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root { --primary:#6366f1; --success:#10b981; --danger:#ef4444; --warning:#fbbf24; --purple:#8b5cf6; --dark:#1e293b; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:linear-gradient(135deg,#667eea,#764ba2); min-height:100vh; color:#333; }
+    .container { display:flex; min-height:100vh; }
+    .sidebar { width:280px; background:linear-gradient(180deg,#1e293b,#0f172a); color:white; padding:30px 20px; position:fixed; height:100vh; z-index:1000; overflow-y:auto; box-shadow:10px 0 30px rgba(0,0,0,0.4); }
+    .logo { font-size:32px; font-weight:700; text-align:center; margin-bottom:50px; background:linear-gradient(to right,#8b5cf6,#ec4899); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .sidebar button { width:100%; padding:18px 20px; background:rgba(255,255,255,0.1); border:none; color:white; font-size:16px; text-align:left; border-radius:14px; margin:10px 0; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:14px; font-weight:500; }
+    .sidebar button:hover, .sidebar button.active { background:var(--primary); transform:translateX(12px); }
+    .logout { margin-top:auto; background:linear-gradient(to right,#ef4444,#dc2626)!important; }
+    .main { margin-left:280px; padding:50px 40px; width:calc(100% - 280px); min-height:100vh; }
+    .card { background:white; border-radius:20px; padding:35px; box-shadow:0 12px 35px rgba(0,0,0,0.12); margin-bottom:30px; }
+    .section { display:none; }
+    .section.active { display:block; animation:fadeIn 0.6s; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+    input, textarea, select { width:100%; padding:14px; margin:12px 0; border-radius:12px; border:2px solid #e2e8f0; font-size:15px; }
+    .btn { padding:14px 28px; border:none; border-radius:12px; font-weight:600; cursor:pointer; color:white; }
+    .submit-btn { background:var(--success); }
+    .add-btn { background:var(--primary); }
+    .status-approved { background:#d1fae5; color:#065f46; padding:10px 20px; border-radius:12px; font-weight:600; }
+    .status-pending { background:#fef3c7; color:#92400e; padding:10px 20px; border-radius:12px; font-weight:600; }
+  
+  /* ADD THIS TO YOUR <style> TAG (anywhere inside) */
+.reviews-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.reviews-table th {
+  background: var(--primary);
+  color: white;
+  padding: 18px;
+  text-align: left;
+  font-weight: 600;
+}
+.reviews-table td {
+  padding: 18px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+.reviews-table tr:hover {
+  background: #f8fafc;
+}
+.rating-stars {
+  color: #fbbf24;
+  font-size: 22px;
+  letter-spacing: 2px;
+}
+.review-text {
+  max-width: 400px;
+  word-wrap: break-word;
+  color: #475569;
+  line-height: 1.6;
+}
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #94a3b8;
+  font-size: 18px;
+}
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <aside class="sidebar">
+    <div class="logo">SME DASHBOARD</div>
+    <button onclick="show('business')" class="active">
+      <i class="fas fa-store"></i> Business Profile
+    </button>
+    <button onclick="show('products')" id="productsBtn" disabled>
+      <i class="fas fa-box"></i> My Products
+    </button>
+    <button onclick="show('addProduct')" id="addBtn" disabled>
+      <i class="fas fa-plus-circle"></i> Add Product
+    </button>
+    <button onclick="show('orders')" id="ordersBtn" disabled>
+      <i class="fas fa-shopping-cart"></i> My Orders
+    </button>
+    <button onclick="show('reviews')" id="reviewsBtn" disabled>
+  <i class="fas fa-star"></i> Customer Reviews
+</button>
+    <button class="logout" onclick="logout()">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+  </aside>
+
+  <main class="main">
+
+    <!-- BUSINESS PROFILE -->
+    <section id="business" class="section active">
+      <div class="card">
+        <h1 style="margin-bottom:20px;color:#1e293b;">Complete Your Business Profile</h1>
+        <p style="margin-bottom:30px;color:#64748b;">Fill in your business details and submit for admin approval. Once approved, you can add products!</p>
+
+        <form id="businessForm">
+          <label>Business Name</label>
+          <input type="text" id="bName" required placeholder="e.g. Nairobi Tech Shop">
+
+          <label>Owner Name</label>
+          <input type="text" id="oName" required placeholder="Your full name">
+
+          <label>Category</label>
+          <select id="bCategory" required>
+            <option value="">Choose category</option>
+            <option>Electronics</option>
+            <option>Fashion & Beauty</option>
+            <option>Food & Drinks</option>
+            <option>Home & Living</option>
+            <option>Health</option>
+            <option>Services</option>
+            <option>Other</option>
+          </select>
+
+          <label>Short Description</label>
+          <textarea id="bDesc" rows="4" required placeholder="Tell customers what you sell..."></textarea>
+
+          <div style="margin-top:30px;text-align:center;">
+            <button type="submit" class="btn submit-btn" style="font-size:18px;padding:16px 40px;">
+              Submit for Approval
+            </button>
+          </div>
+        </form>
+
+        <div id="statusDisplay" style="margin-top:30px;text-align:center;font-size:18px;"></div>
+      </div>
+    </section>
+
+    <!-- MY PRODUCTS -->
+    <section id="products" class="section">
+      <div class="card">
+        <h2>My Products</h2>
+        <div id="productsList">Loading products...</div>
+      </div>
+    </section>
+
+    <!-- ADD PRODUCT -->
+    <section id="addProduct" class="section">
+      <div class="card">
+        <h2>Add New Product</h2>
+        <div id="addProductForm">Click to load form...</div>
+      </div>
+    </section>
+
+    <!-- MY ORDERS - NOW SHOWN DIRECTLY -->
+    <section id="orders" class="section">
+      <div class="card">
+        <h2 style="margin-bottom:20px;color:#1e293b;">My Customer Orders</h2>
+        <div id="ordersList">
+          <div style="text-align:center;padding:100px 20px;color:#94a3b8;">
+            <i class="fas fa-spinner fa-spin" style="font-size:48px;margin-bottom:20px;"></i>
+            <br>Loading your orders...
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOMER REVIEWS TAB -->
+    <section id="reviews" class="section">
+      <div class="card">
+        <h2 style="margin-bottom:20px;color:#1e293b;">Customer Reviews & Ratings</h2>
+        <div id="reviewsList">
+          <div class="empty-state">
+            Loading reviews...
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  const API = 'http://localhost:5000';
+  let user = null;
+  let business = null;
+
+  // Check login
+  try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+  if (!user || !user.email) window.location.href = 'login.html';
+
+  function show(section) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+    document.getElementById(section).classList.add('active');
+    const btn = document.querySelector(`button[onclick="show('${section}')"]`);
+    if (btn) btn.classList.add('active');
+  }
+
+  function logout() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'login.html';
+  }
+
+  // Load Business Status
+  async function loadBusiness() {
+    try {
+      const res = await fetch(`${API}/my-business?email=${user.email}`);
+      business = await res.json();
+
+      const statusDiv = document.getElementById('statusDisplay');
+
+      if (!business || !business.id) {
+        statusDiv.innerHTML = '<p style="color:#64748b;">Complete your business profile to get started!</p>';
+        return;
+      }
+
+      document.getElementById('bName').value = business.business_name || '';
+      document.getElementById('oName').value = business.owner_name || '';
+      document.getElementById('bCategory').value = business.category || '';
+      document.getElementById('bDesc').value = business.description || '';
+
+      if (business.status == 1) {
+        statusDiv.innerHTML = '<div class="status-approved">APPROVED! You can now add products</div>';
+        enableFullAccess();
+      } else {
+        statusDiv.innerHTML = '<div class="status-pending">PENDING APPROVAL<br><small>Waiting for admin review...</small></div>';
+        disableFullAccess();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+   function enableFullAccess() {
+  document.getElementById('productsBtn').disabled = false;
+  document.getElementById('addBtn').disabled = false;
+  document.getElementById('ordersBtn').disabled = false;
+  document.getElementById('reviewsBtn').disabled = false;  // ADD THIS LINE
+
+  loadMyProducts();
+  loadMyOrders();
+  // Optional: load reviews automatically when tab is opened
+}
+
+  function disableFullAccess() {
+    document.getElementById('productsBtn').disabled = true;
+    document.getElementById('addBtn').disabled = true;
+    document.getElementById('ordersBtn').disabled = true;
+  }
+
+  // Submit Business Profile
+  document.getElementById('businessForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = {
+      business_name: document.getElementById('bName').value.trim(),
+      owner_name: document.getElementById('oName').value.trim(),
+      owner_email: user.email,
+      category: document.getElementById('bCategory').value,
+      description: document.getElementById('bDesc').value.trim()
+    };
+
+    const res = await fetch(`${API}/register-sme`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    alert(result.message);
+    loadBusiness();
+  });
+
+  // Load Add Product Form
+  function loadAddProductForm() {
+    document.getElementById('addProductForm').innerHTML = `
+      <form id="productForm" style="margin-top:20px;">
+        <label>Product Name *</label>
+        <input type="text" name="name" required>
+
+        <label>Category *</label>
+        <select name="category" required>
+          <option value="">Choose...</option>
+          <option>Electronics</option>
+          <option>Fashion & Beauty</option>
+          <option>Food & Drinks</option>
+          <option>Home & Living</option>
+          <option>Health</option>
+          <option>Services</option>
+          <option>Other</option>
+        </select>
+
+        <label>Price (KSh) *</label>
+        <input type="number" step="0.01" name="price" required>
+
+        <label>Quantity in Stock *</label>
+        <input type="number" name="quantity" value="1" min="1" required>
+
+        <label>Description</label>
+        <textarea name="description" rows="4"></textarea>
+
+        <label>Product Image *</label>
+        <input type="file" name="image" accept="image/*" required>
+
+        <button type="submit" class="btn add-btn" style="margin-top:20px;">ADD PRODUCT</button>
+      </form>
+      <div id="addMsg" style="margin-top:15px;text-align:center;font-weight:600;"></div>
+    `;
+
+    document.getElementById('productForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      formData.append('sme_email', user.email);
+
+      const msg = document.getElementById('addMsg');
+      msg.textContent = 'Uploading product...';
+
+      try {
+        const res = await fetch(`${API}/add-product-sme`, { method: 'POST', body: formData });
+        const data = await res.json();
+        msg.style.color = res.ok ? '#10b981' : '#ef4444';
+        msg.textContent = data.message;
+
+        if (res.ok) {
+          e.target.reset();
+          setTimeout(() => {
+            show('products');
+            loadMyProducts();
+          }, 1500);
+        }
+      } catch (err) {
+        msg.style.color = '#ef4444';
+        msg.textContent = 'Network error. Try again.';
+      }
+    });
+  }
+
+  // Load My Products
+  async function loadMyProducts() {
+    try {
+      const res = await fetch(`${API}/my-products?sme_email=${user.email}`);
+      const products = await res.json();
+      const container = document.getElementById('productsList');
+
+      if (!products || products.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:80px;color:#64748b;">
+          <h3>No products yet</h3>
+          <p>Click "Add Product" to start selling!</p>
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 15px 40px rgba(0,0,0,0.12);margin-top:20px;">
+          <div style="background:#6366f1;color:white;padding:25px 35px;">
+            <h2 style="margin:0;font-size:28px;">My Products (${products.length})</h2>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;min-width:900px;border-collapse:collapse;">
+              <thead>
+                <tr style="background:#f8fafc;">
+                  <th style="padding:20px;text-align:left;font-weight:600;color:#475569;border-bottom:3px solid #6366f1;">Product</th>
+                  <th style="padding:20px;text-align:left;">Category</th>
+                  <th style="padding:20px;text-align:left;">Price</th>
+                  <th style="padding:20px;text-align:left;">Stock</th>
+                  <th style="padding:20px;text-align:left;">Image</th>
+                  <th style="padding:20px;text-align:left;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${products.map(p => `
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:20px;font-weight:600;">${p.name}</td>
+                    <td style="padding:20px;color:#6366f1;">${p.category || '—'}</td>
+                    <td style="padding:20px;font-weight:700;color:#10b981;">KSh ${parseFloat(p.price).toLocaleString()}</td>
+                    <td style="padding:20px;">
+                      <span style="padding:8px 16px;border-radius:10px;background:${p.quantity > 0 ? '#d1fae5' : '#fee2e2'};color:${p.quantity > 0 ? '#065f46' : '#991b1b'};font-weight:600;">
+                        ${p.quantity} left
+                      </span>
+                    </td>
+                    <td style="padding:20px;">
+                      ${p.image ? `<img src="${API}${p.image}" style="width:80px;height:80px;object-fit:cover;border-radius:12px;">` : 'No Image'}
+                    </td>
+                    <td style="padding:20px;">
+                      <button onclick="deleteProduct(${p.id})" style="background:#ef4444;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      document.getElementById('productsList').innerHTML = '<p style="color:#ef4444;text-align:center;">Failed to load products</p>';
+    }
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm("Delete this product permanently?")) return;
+    try {
+      await fetch(`${API}/delete-product/${id}`, { method: 'DELETE' });
+      alert("Product deleted!");
+      loadMyProducts();
+    } catch (err) {
+      alert("Failed to delete");
+    }
+  }
+
+  // Load My Orders (Now shown directly)
+  async function loadMyOrders() {
+    const container = document.getElementById('ordersList');
+    try {
+      const res = await fetch(`${API}/sme/my-orders?email=${user.email}`);
+      const orders = await res.json();
+
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:100px;color:#94a3b8;">
+          <h3>No orders yet</h3>
+          <p>When customers pay, orders will appear here</p>
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 15px 40px rgba(0,0,0,0.12);margin-top:20px;">
+          <div style="background:#6366f1;color:white;padding:25px 35px;">
+            <h2 style="margin:0;font-size:28px;">Customer Orders (${orders.length})</h2>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;min-width:1000px;border-collapse:collapse;">
+              <thead>
+                <tr style="background:#f8fafc;">
+                  <th style="padding:20px;text-align:left;">Order ID</th>
+                  <th style="padding:20px;text-align:left;">Customer</th>
+                  <th style="padding:20px;text-align:left;">Product</th>
+                  <th style="padding:20px;text-align:left;">Qty</th>
+                  <th style="padding:20px;text-align:left;">Total</th>
+                  <th style="padding:20px;text-align:left;">Status Flow</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orders.map(order => {
+                  const status = order.status || 'Pending';
+                  const isPaid = ['Paid', 'Shipped', 'Delivered'].includes(status);
+                  const isShipped = ['Shipped', 'Delivered'].includes(status);
+                  const isDelivered = status === 'Delivered';
+
+                  return `
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                      <td style="padding:20px;font-weight:700;">#${order.order_id}</td>
+                      <td style="padding:20px;">
+                        <div>${order.customer_name || 'Customer'}</div>
+                        <small style="color:#64748b;">${order.customer_email}</small>
+                      </td>
+                      <td style="padding:20px;font-weight:600;">${order.product_name}</td>
+                      <td style="padding:20px;text-align:center;">${order.quantity}</td>
+                      <td style="padding:20px;font-weight:700;color:#10b981;">KSh ${parseFloat(order.total_price).toLocaleString()}</td>
+                      <td style="padding:20px;">
+                        <div style="display:flex;align-items:center;gap:12px;font-weight:600;flex-wrap:wrap;">
+                          <span style="color:${isPaid ? '#10b981' : '#94a3b8'};">Paid</span>
+                          <span style="color:#94a3b8;font-size:20px;">${isPaid ? '→' : '—'}</span>
+                          <span style="color:${isShipped ? '#3b82f6' : '#94a3b8'};">Shipped</span>
+                          <span style="color:#94a3b8;font-size:20px;">${isShipped ? '→' : '—'}</span>
+                          <span style="color:${isDelivered ? '#8b5cf6' : '#94a3b8'};">Delivered</span>
+
+                          ${!isDelivered ? `
+                            <div style="margin-left:auto;display:flex;gap:8px;">
+                              ${isPaid && !isShipped ? `<button onclick="updateOrderStatus(${order.order_id}, 'Shipped')" class="btn" style="background:#3b82f6;padding:8px 16px;font-size:14px;">Mark Shipped</button>` : ''}
+                              ${isShipped && !isDelivered ? `<button onclick="updateOrderStatus(${order.order_id}, 'Delivered')" class="btn" style="background:#8b5cf6;padding:8px 16px;font-size:14px;">Mark Delivered</button>` : ''}
+                            </div>
+                          ` : '<span style="margin-left:auto;color:#8b5cf6;font-weight:bold;">Completed</span>'}
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      container.innerHTML = `<p style="color:#ef4444;text-align:center;padding:50px;">Failed to load orders</p>`;
+    }
+  }
+
+  async function updateOrderStatus(orderId, newStatus) {
+    if (!confirm(`Mark order #${orderId} as ${newStatus}?`)) return;
+
+    try {
+      const res = await fetch(`${API}/sme/update-order-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId, status: newStatus, sme_email: user.email })
+      });
+      const result = await res.json();
+      if (res.ok) {
+        alert(`Order #${orderId} marked as ${newStatus}!`);
+        loadMyOrders();
+      } else {
+        alert(result.message || 'Update failed');
+      }
+    } catch (err) {
+      alert('Network error');
+    }
+  }
+
+  // Load My Reviews
+  async function loadMyReviews() {
+    const container = document.getElementById('reviewsList');
+    try {
+      const res = await fetch(`${API}/sme/my-reviews?sme_email=${user.email}`);
+      const reviews = await res.json();
+
+      if (!reviews || reviews.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>No reviews yet</p>
+            <p style="color:#94a3b8;margin-top:10px;">Customer reviews will appear here after delivery</p>
+          </div>`;
+        return;
+      }
+
+      // Star rendering function
+      const renderStars = (rating) => '★★★★★'.substring(5 - rating) + '★★★★★'.substring(0, rating);
+
+      container.innerHTML = `
+        <table class="reviews-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Customer</th>
+              <th>Rating</th>
+              <th>Review</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${reviews.map(r => `
+              <tr>
+                <td><strong>${r.product_name}</strong></td>
+                <td>
+                  <div>${r.customer_name || 'Anonymous'}</div>
+                  <small style="color:#64748b;">${r.customer_email}</small>
+                </td>
+                <td>
+                  <div class="rating-stars">${renderStars(r.rating)}</div>
+                  <small style="color:#64748b;">${r.rating}.0 / 5.0</small>
+                </td>
+                <td class="review-text">${r.review || '<em>No comment</em>'}</td>
+                <td style="color:#64748b;">
+                  ${new Date(r.created_at).toLocaleDateString('en-KE', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      container.innerHTML = '<p style="color:#ef4444;text-align:center;padding:50px;">Failed to load reviews</p>';
+    }
+  }
+
+  // Migrate old Pending → Paid
+  async function migrateOldPendingToPaid() {
+    try {
+      const res = await fetch(`${API}/sme/my-orders?email=${user.email}`);
+      const orders = await res.json();
+      for (const o of orders.filter(x => x.status === 'Pending' && x.mpesa_receipt)) {
+        await fetch(`${API}/sme/update-order-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: o.order_id, status: 'Paid', sme_email: user.email })
+        });
+      }
+    } catch (err) { console.log("Migration skipped"); }
+  }
+
+  // INIT ON LOAD
+  window.addEventListener('DOMContentLoaded', () => {
+    loadBusiness();
+    show('business');
+    migrateOldPendingToPaid();
+    document.getElementById('ordersBtn').addEventListener('click', loadMyOrders);
+document.getElementById('reviewsBtn').addEventListener('click', loadMyReviews);
+
+    document.querySelector(`button[onclick="show('addProduct')"]`)
+      .addEventListener('click', loadAddProductForm);
+  });
+</script>
+</body>
+</html>

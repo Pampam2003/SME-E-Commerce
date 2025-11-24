@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | SME E-Commerce</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+      <p>Don’t have an account? <a href="register.html">Register here</a></p>
+    </form>
+    <p id="message"></p>
+  </div>
+
+  <script>
+  const form = document.getElementById('loginForm');
+  const messageEl = document.getElementById('message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    try {
+      const res = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      messageEl.textContent = data.message;
+      messageEl.style.color = data.role ? 'green' : 'red';
+
+      // Only proceed if login was successful (role exists or message indicates success)
+      if (data.role || data.message.includes('Welcome')) {
+        const role = (data.role || 'customer').toLowerCase().trim();
+
+        // Save user info
+        localStorage.setItem('currentUser', JSON.stringify({
+          email: data.email,
+          name: data.name || email.split('@')[0],
+          role: role
+        }));
+
+        // Redirect based on role
+        setTimeout(() => {
+          if (role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+          } else if (role === 'sme_owner') {
+            window.location.href = 'sme-dashboard.html';
+          } else {
+            window.location.href = 'customer.html';  // Make sure this file exists!
+          }
+        }, 1200);
+      }
+    } catch (err) {
+      messageEl.textContent = 'Network error. Is the server running?';
+      messageEl.style.color = 'red';
+    }
+  });
+</script>
+</body>
+</html>

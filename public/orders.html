@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders | SME E-Commerce</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { 
+      font-family: 'Segoe UI', sans-serif; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+      margin: 0; 
+      padding: 30px; 
+      min-height: 100vh;
+    }
+    .container { 
+      max-width: 1100px; 
+      margin: auto; 
+      background: white; 
+      border-radius: 20px; 
+      overflow: hidden; 
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    header { 
+      background: linear-gradient(to right, #6366f1, #8b5cf6); 
+      color: white; 
+      padding: 30px; 
+      text-align: center; 
+    }
+    header h1 { 
+      margin: 0; 
+      font-size: 32px; 
+      font-weight: 700;
+    }
+    .back { 
+      display: inline-block; 
+      margin: 20px; 
+      padding: 12px 28px; 
+      background: linear-gradient(to right, #6366f1, #8b5cf6); 
+      color: white; 
+      text-decoration: none; 
+      border-radius: 12px; 
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .back:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 10px 25px rgba(99,102,241,0.4);
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin: 20px 0;
+    }
+    th { 
+      background: linear-gradient(to right, #6366f1, #8b5cf6); 
+      color: white; 
+      padding: 20px; 
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    td { 
+      padding: 18px; 
+      text-align: center; 
+      border-bottom: 1px solid #eee;
+      font-size: 16px;
+    }
+    tr:hover { background: #f8faff; }
+    .status { 
+      padding: 10px 20px; 
+      border-radius: 30px; 
+      font-weight: bold; 
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+    .paid { background: #d1fae5; color: #065f46; }
+    .pending { background: #fef3c7; color: #92400e; }
+    .loading { 
+      text-align: center; 
+      padding: 60px; 
+      color: #6366f1; 
+      font-size: 20px;
+    }
+    .no-orders { 
+      text-align: center; 
+      padding: 80px 20px; 
+      color: #64748b; 
+      font-size: 20px;
+    }
+    .refresh-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>My Orders</h1>
+  </header>
+  <a href="customer.html" class="back">Back to Shop</a>
+  <div id="content">
+    <div class="loading">Loading your orders...</div>
+  </div>
+</div>
+
+<script>
+// UNKILLABLE USER — WORKS EVERY TIME
+let user = null;
+const keys = ['currentUser', 'user', 'checkoutUser', 'ordersUser'];
+for (const key of keys) {
+  try {
+    const data = localStorage.getItem(key);
+    if (data) {
+      const u = JSON.parse(data);
+      if (u && u.email) {
+        user = u;
+        keys.forEach(k => localStorage.setItem(k, JSON.stringify(user)));
+        break;
+      }
+    }
+  } catch(e) {}
+}
+
+if (!user || !user.email) {
+  alert('Please login first!');
+  window.location.href = 'login.html';
+}
+
+async function loadOrders() {
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="loading">Loading your orders...</div>';
+
+  try {
+    const res = await fetch(`http://localhost:5000/orders?email=${encodeURIComponent(user.email)}`);
+    const orders = await res.json();
+
+    if (!orders || orders.length === 0) {
+      content.innerHTML = `
+        <div class="no-orders">
+          <h3>No orders yet!</h3>
+          <a href="customer.html" style="color:#007bff;">Continue Shopping</a>
+        </div>
+      `;
+      return;
+    }
+
+    let html = `
+      <table>
+        <tr>
+          <th>Order ID</th>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Receipt</th>
+        </tr>
+    `;
+
+    orders.forEach(o => {
+      const date = new Date(o.order_date).toLocaleString();
+      const statusClass = o.status === 'Paid' ? 'paid' : 'pending';
+      const receiptLink = o.receipt ? `<a href="#" style="color:green;">${o.receipt}</a>` : '-';
+
+      html += `
+        <tr>
+          <td>#${o.order_id}</td>
+          <td>${o.product_name}</td>
+          <td>${o.quantity}</td>
+          <td>KSh ${parseFloat(o.total_price).toFixed(2)}</td>
+          <td><span class="status ${statusClass}">${o.status}</span></td>
+          <td>${date}</td>
+          <td>${receiptLink}</td>
+        </tr>
+      `;
+    });
+
+    html += `</table>`;
+    content.innerHTML = html;
+
+  } catch (err) {
+    content.innerHTML = `<div class="no-orders">Error loading orders. <button onclick="loadOrders()">Retry</button></div>`;
+  }
+}
+
+// Auto-refresh every 5 seconds
+setInterval(loadOrders, 5000);
+loadOrders(); // First load
+</script>
+
+</body>
+</html>

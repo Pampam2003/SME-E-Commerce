@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SME PRO | Super Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root { --primary:#6366f1; --danger:#ef4444; --success:#10b981; --warning:#f59e0b; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+    body { background:#f1f5f9; color:#1e293b; }
+    .header { background:var(--primary); color:white; padding:20px 40px; font-size:24px; font-weight:700; text-align:center; box-shadow:0 4px 20px rgba(99,102,241,0.3); }
+    .container { display:flex; min-height:calc(100vh - 80px); }
+    .sidebar { width:280px; background:#1e293b; color:white; padding:30px 0; position:fixed; height:100%; overflow-y:auto; z-index:1000; }
+    .sidebar a { display:block; padding:18px 30px; color:white; text-decoration:none; transition:0.3s; cursor:pointer; }
+    .sidebar a:hover, .sidebar a.active { background:var(--primary); }
+    .sidebar i { margin-right:12px; }
+    .main { flex:1; padding:40px; margin-left:280px; }
+    .card { background:white; border-radius:16px; padding:30px; box-shadow:0 10px 30px rgba(0,0,0,0.08); margin-bottom:30px; }
+    table { width:100%; border-collapse:collapse; margin:20px 0; }
+    th, td { padding:16px; text-align:left; border-bottom:1px solid #e2e8f0; }
+    th { background:#f8fafc; font-weight:600; color:#475569; }
+    .btn { padding:8px 16px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; margin:0 4px; }
+    .btn-success { background:var(--success); color:white; }
+    .btn-danger { background:var(--danger); color:white; }
+    .status { padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; }
+    .status-approved, .status-Delivered { background:#dcfce7; color:#166534; }
+    .status-pending, .status-Pending { background:#fef9c3; color:#854d0e; }
+    .status-Paid { background:#dbeafe; color:#1d4ed8; }
+    .action-box { display:flex; gap:8px; justify-content:center; }
+    small { color:#64748b; font-size:12px; }
+    .text-center { text-align:center; }
+    .text-muted { color:#94a3b8; }
+    .text-danger { color:var(--danger); }
+  </style>
+</head>
+<body>
+
+<div class="header">SME PRO | Super Admin Panel</div>
+
+<div class="container">
+  <div class="sidebar">
+    <a onclick="show('users')" class="active"><i class="fas fa-users"></i> All Users</a>
+    <a onclick="show('smes')"><i class="fas fa-store"></i> SME Listings</a>
+    <a onclick="show('allOrders')"><i class="fas fa-shopping-cart"></i> All Orders</a>
+    <a onclick="show('logs')"><i class="fas fa-history"></i> Activity Logs</a>
+    <a onclick="show('reports')"><i class="fas fa-chart-bar"></i> Delivered Reports</a>
+    <a href="login.html" onclick="localStorage.clear()" style="margin-top:auto;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+
+  <div class="main">
+
+    <!-- USERS -->
+    <div id="users" class="section">
+      <div class="card">
+        <h2>All Users</h2>
+        <table id="usersTable">
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+          <tbody><tr><td colspan="5" class="text-center text-muted">Loading users...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SME LISTINGS -->
+    <div id="smes" class="section" style="display:none;">
+      <div class="card">
+        <h2>SME Business Listings</h2>
+        <table id="smesTable">
+          <thead><tr><th>Business Name</th><th>Owner</th><th>Email</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody><tr><td colspan="6" class="text-center text-muted">Loading SMEs...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL ORDERS -->
+    <div id="allOrders" class="section" style="display:none;">
+      <div class="card">
+        <h2>All Orders</h2>
+        <table id="allOrdersTable">
+          <thead><tr><th>ID</th><th>Customer</th><th>Product</th><th>Amount</th><th>Phone</th><th>Status</th><th>Receipt</th><th>Date</th></tr></thead>
+          <tbody><tr><td colspan="8" class="text-center text-muted">Loading orders...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOGS -->
+    <div id="logs" class="section" style="display:none;">
+      <div class="card">
+        <h2>Activity Logs</h2>
+        <table id="logsTable">
+          <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+          <tbody><tr><td colspan="4" class="text-center text-muted">Loading logs...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DELIVERED PRODUCTS REPORT (FIXED & BEAUTIFUL) -->
+    <div id="reports" class="section" style="display:none;">
+      <div class="card">
+        <h2 id="reportTitle">Delivered Products Report</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>SME</th>
+              <th>Amount</th>
+              <th>Receipt</th>
+              <th>Delivered Date</th>
+            </tr>
+          </thead>
+          <tbody id="recentDeliveredTable">
+            <tr><td colspan="7" class="text-center text-muted">Loading delivered orders...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+
+function show(section) {
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+  document.getElementById(section).style.display = 'block';
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  event.target.closest('a').classList.add('active');
+}
+
+// === YOUR OTHER FUNCTIONS (USERS, SMEs, ORDERS, LOGS) REMAIN EXACTLY THE SAME ===
+async function loadUsers() {
+  const tbody = document.querySelector('#usersTable tbody');
+  try {
+    const res = await fetch(`${API}/users`);
+    const users = await res.json();
+
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No users found</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.name || '—'}</td>
+        <td>${u.email}</td>
+        <td><span class="status status-${u.role === 'admin' ? 'approved' : 'pending'}">${u.role || 'customer'}</span></td>
+        <td>${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
+        <td>
+          ${u.status === 'suspended' 
+            ? '<span style="color:#ef4444; font-weight:700; background:#fee2e2; padding:4px 10px; border-radius:8px;">SUSPENDED</span>' 
+            : '<span style="color:#10b981;">Active</span>'
+          }
+        </td>
+        <td class="action-box">
+          ${u.role === 'admin' 
+            ? '<span style="color:#10b981; font-weight:600;">Super Admin</span>' 
+            : `
+              <button onclick="suspendUser(${u.id})" class="btn ${u.status === 'suspended' ? 'btn-success' : 'btn-warning'}">
+                ${u.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
+              </button>
+              <button onclick="deleteUser(${u.id})" class="btn btn-danger">Delete</button>
+            `
+          }
+        </td>
+      </tr>
+    `).join('');
+
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-danger text-center">Error loading users</td></tr>';
+  }
+}
+
+// SUSPEND / UNSUSPEND USER
+async function suspendUser(userId) {
+  const btn = event.target;
+  const isSuspended = btn.textContent.includes('Unsuspend');
+  const action = isSuspended ? 'unsuspend' : 'suspend';
+  
+  if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+
+  try {
+    const res = await fetch(`${API}/suspend-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, action })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    loadUsers();  // Refresh the list
+  } catch (err) {
+    alert('Failed to suspend/unsuspend user');
+  }
+}
+
+
+// DELETE USER PERMANENTLY
+async function deleteUser(userId, email) {
+  if (!confirm(`⚠️ PERMANENTLY DELETE user: ${email}?\nThis cannot be undone!`)) return;
+
+  try {
+    const res = await fetch(`${API}/delete-user/${userId}`, { method: 'DELETE' });
+    const data = await res.json();
+    alert(data.message || 'User deleted');
+    loadUsers();
+  } catch (err) {
+    alert('Failed to delete user');
+  }
+}
+
+async function loadSMEs() {
+  const tbody = document.querySelector('#smesTable tbody');
+  try {
+    const res = await fetch(`${API}/sme-listings?status=all`);
+    const smes = await res.json();
+    tbody.innerHTML = smes.length === 0 
+      ? '<tr><td colspan="6" class="text-center text-muted">No SME applications</td></tr>'
+      : smes.map(sme => `
+        <tr>
+          <td><strong>${sme.business_name}</strong></td>
+          <td>${sme.owner_name}</td>
+          <td>${sme.owner_email}</td>
+          <td>${sme.category}</td>
+          <td><span class="status status-${sme.status}">${sme.status.toUpperCase()}</span></td>
+          <td class="action-box">
+            ${sme.status === 'pending' ? `
+              <button onclick="approveSME(${sme.id})" class="btn btn-success">Approve</button>
+              <button onclick="rejectSME(${sme.id})" class="btn btn-danger">Reject</button>
+            ` : '<span style="color:green;font-weight:600;">Approved</span>'}
+          </td>
+        </tr>
+      `).join('');
+  } catch { tbody.innerHTML = '<tr><td colspan="6" class="text-danger text-center">Error loading SMEs</td></tr>'; }
+}
+
+async function approveSME(id) { if (confirm("Approve this business?")) { await fetch(`${API}/sme-listings/${id}/approve`, { method: 'PUT' }); loadSMEs(); } }
+async function rejectSME(id) { if (confirm("Reject and delete this application?")) { await fetch(`${API}/sme-listings/${id}/reject`, { method: 'PUT' }); loadSMEs(); } }
+
+async function loadAllOrders() {
+  const tbody = document.querySelector('#allOrdersTable tbody');
+  try {
+    const res = await fetch(`${API}/admin-orders`);
+    const orders = await res.json();
+    tbody.innerHTML = orders.length === 0 
+      ? '<tr><td colspan="8" class="text-center text-muted">No orders yet</td></tr>'
+      : orders.map(o => `
+        <tr>
+          <td>#${o.order_id}</td>
+          <td>${o.customer_name}<br><small>${o.customer_email}</small></td>
+          <td>${o.product_name}</td>
+          <td style="color:#10b981;font-weight:700;">KSh ${Number(o.total_price).toLocaleString()}</td>
+          <td>${o.mpesa_phone || '—'}</td>
+          <td><span class="status status-${o.status}">${o.status}</span></td>
+          <td style="font-family:monospace;background:#f1f5f9;padding:6px;border-radius:6px;">${o.mpesa_receipt || '—'}</td>
+          <td>${new Date(o.created_at).toLocaleString()}</td>
+        </tr>
+      `).join('');
+  } catch { tbody.innerHTML = '<tr><td colspan="8" class="text-danger text-center">Error loading orders</td></tr>'; }
+}
+
+async function loadLogs() {
+  const tbody = document.querySelector('#logsTable tbody');
+  try {
+    const res = await fetch(`${API}/activity-logs`);
+    const logs = await res.json();
+    tbody.innerHTML = logs.length === 0 
+      ? '<tr><td colspan="4" class="text-center text-muted">No activity yet</td></tr>'
+      : logs.map(l => `
+        <tr>
+          <td>${new Date(l.timestamp).toLocaleString()}</td>
+          <td>${l.user_name || l.user_email || 'System'}</td>
+          <td><strong>${l.action}</strong></td>
+          <td>${l.details || '—'}</td>
+        </tr>
+      `).join('');
+  } catch { tbody.innerHTML = '<tr><td colspan="4" class="text-danger text-center">Error loading logs</td></tr>'; }
+}
+
+async function loadDeliveredReport() {
+  const tbody = document.getElementById('recentDeliveredTable');
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+
+  try {
+    const res = await fetch(`${API}/admin-reports/delivered`);
+    if (!res.ok) throw new Error('Failed');
+    const orders = await res.json();
+
+    if (!orders || orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No delivered orders yet</td></tr>';
+      document.getElementById('reportTitle').textContent = 'Delivered Products Report';
+      return;
+    }
+
+    // Sort by latest first
+    orders.sort((a, b) => new Date(b.delivered_date || b.updated_at) - new Date(a.delivered_date || a.updated_at));
+
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td><strong>#${o.order_id || o.id}</strong></td>
+        <td>
+          <div><strong>${o.customer_name || 'Walk-in'}</strong></div>
+          <small class="text-muted">${o.customer_email || o.customer_phone || ''}</small>
+        </td>
+        <td>
+          <div><strong>${o.product_name || 'Unknown'}</strong></div>
+          ${o.quantity > 1 ? `<small class="text-muted">Qty: ${o.quantity}</small>` : ''}
+        </td>
+        <td><span style="background:#e0e7ff;padding:4px 10px;border-radius:12px;font-size:11px;">
+          ${o.sme_name || 'Platform Sale'}
+        </span></td>
+        <td style="color:#10b981;font-weight:700;">KSh ${Number(o.amount || o.total_price).toLocaleString()}</td>
+        <td><code style="background:#f1f5f9;padding:6px 10px;border-radius:6px;font-size:12px;">
+          ${o.receipt || o.mpesa_receipt || 'COD'}
+        </code></td>
+        <td>
+          <div>${new Date(o.delivered_date || o.created_at).toLocaleDateString('en-KE')}</div>
+          <small class="text-muted">${new Date(o.delivered_date || o.created_at).toLocaleTimeString('en-KE', {hour:'2-digit', minute:'2-digit'})}</small>
+        </td>
+      </tr>
+    `).join('');
+
+    document.getElementById('reportTitle').textContent = `Delivered Products Report (${orders.length} recent)`;
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load delivered orders</td></tr>';
+  }
+}
+
+// Initial load
+window.addEventListener('DOMContentLoaded', () => {
+  loadUsers();
+  loadSMEs();
+  loadAllOrders();
+  loadLogs();
+  loadDeliveredReport();
+});
+</script>
+</body>
+</html>
